@@ -25,7 +25,7 @@ private let defaultAlphaValueSemiTransparent: CGFloat = 0.7
 
 // Direction of visible cards
 public enum VisibleCardsDirection: Int {
-    case top, bottom
+    case top, bottom, left, right
 }
 
 public protocol KolodaViewDataSource: class {
@@ -216,22 +216,40 @@ open class KolodaView: UIView, DraggableCardDelegate {
         let topOffset = backgroundCardsTopMargin * CGFloat(countOfVisibleCards - 1)
         let scalePercent = backgroundCardsScalePercent
         let width = self.frame.width * pow(scalePercent, CGFloat(index))
-        let xOffset = (self.frame.width - width) / 2
+        var xOffset = (self.frame.width - width) / 2
+        
         let height = (self.frame.height - bottomOffset - topOffset) * pow(scalePercent, CGFloat(index))
+        var yOffset = (self.frame.height - height) / 2
 
-        if visibleCardsDirection == .bottom {
+        switch visibleCardsDirection {
+        case .bottom:
             let multiplier: CGFloat = index > 0 ? 1.0 : 0.0
             let prevCardFrame = index > 0 ? frameForCard(at: max(index - 1, 0)) : .zero
-            let yOffset = (prevCardFrame.height - height + prevCardFrame.origin.y + backgroundCardsTopMargin) * multiplier
+            yOffset = (prevCardFrame.height - height + prevCardFrame.origin.y + backgroundCardsTopMargin) * multiplier
             let frame = CGRect(x: xOffset, y: yOffset, width: width, height: height)
             
             return frame
-        } else {
+        case .top:
             let multiplier: CGFloat = index < (countOfVisibleCards - 1) ? 1.0 : 0.0
             let nextCardFrame = index < (countOfVisibleCards - 1) ? frameForCard(at: min(index + 1, (countOfVisibleCards - 1))) : .zero
-            let yOffset = (nextCardFrame.origin.y + backgroundCardsTopMargin) * multiplier
+            yOffset = (nextCardFrame.origin.y + backgroundCardsTopMargin) * multiplier
             let frame = CGRect(x: xOffset, y: yOffset, width: width, height: height)
             
+            return frame
+        case .left:
+            let multiplier: CGFloat = index < (countOfVisibleCards - 1) ? 1.0 : 0.0
+            let nextCardFrame = index < (countOfVisibleCards - 1) ? frameForCard(at: min(index + 1, (countOfVisibleCards - 1))) : .zero
+            xOffset = (nextCardFrame.origin.x + defaultBackgroundCardsLeftMargin) * multiplier
+            let frame = CGRect(x: xOffset, y: yOffset, width: width, height: height)
+            
+            return frame
+        case .right:
+            let multiplier: CGFloat = index > 0 ? 1.0 : 0.0
+            let prevCardFrame = index > 0 ? frameForCard(at: max(index - 1, 0)) : .zero
+            
+            xOffset = (prevCardFrame.width - width + prevCardFrame.origin.x + defaultBackgroundCardsLeftMargin) * multiplier
+            
+            let frame = CGRect(x: xOffset, y: yOffset, width: width, height: height)
             return frame
         }
     }
